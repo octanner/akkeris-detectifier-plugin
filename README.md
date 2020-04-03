@@ -4,15 +4,21 @@ CLI commands for the Akkeris Detectifier.
 
 ## Introduction
 
-The Akkeris Detectifier scans Akkeris app endpoints for security vulnerabilities with Detectify when a new release is created. It automatically updates the Akkeris release status with the current status of the scan along with any results or errors.
+The Akkeris Detectifier scans Akkeris app endpoints for security vulnerabilities with Detectify. It can run scans when a new Akkeris release is created on an app or on demand. 
 
-You can see a list of currently running scans using the CLI or through a simple web interface. Viewing past scans is also available through the web interface, and includes report details and any associated errors.
+Scan results are available as a `security_scan` webhook, and for releases, through the Akkeris release status. Scan results are also available through a simple web interface - this includes report details and any associated errors.
+
+You can see a list of currently running scans using the CLI or through the web interface.
 
 To access the web UI: https://akkeris-detectifier.octanner.io
 
 For help with Detectify scores: https://blog.detectify.com/2017/05/24/interpret-detectify-score/
 
 ## Commands
+
+`aka detectify:start -a APPNAME -t THRESHOLD`
+
+Start a Detectify scan on a given application. The "threshold" option is optional - it allows you to specify the maximum allowable threat score. Otherwise, the default is "6".
 
 `aka detectify:enable -a APPNAME`
 
