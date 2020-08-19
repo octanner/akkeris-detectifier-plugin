@@ -1,3 +1,5 @@
+const open = require('open');
+
 const DETECTIFIER_URL = process.env.DETECTIFIER_URL || 'https://akkeris-detectifier.octanner.io';
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'detectifer';
 
@@ -92,6 +94,15 @@ async function scans(appkit) {
   }
 }
 
+async function showUI(appkit) {
+  try {
+    console.log('Opening Detectifier UI...');
+    await open(DETECTIFIER_URL);
+  } catch (err) {
+    appkit.terminal.error(err);
+  }
+}
+
 function init(appkit) {
   const requireApp = {
     app: {
@@ -124,7 +135,9 @@ function init(appkit) {
     
     .command('detectify:scans', 'Show currently running Detectify scans', {}, scans.bind(null, appkit))
     .command('detectify:running', false, {}, scans.bind(null, appkit))
-    .command('detectify:current', false, {}, scans.bind(null, appkit));
+    .command('detectify:current', false, {}, scans.bind(null, appkit))
+    
+    .command('detectify:ui', 'Open the Detectifier UI in a web browser', {}, showUI.bind(null, appkit));
 }
 
 module.exports = {
