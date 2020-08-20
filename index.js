@@ -37,7 +37,8 @@ async function start(appkit, args) {
 }
 
 async function enable(appkit, args) {
-  const app = args.app;
+  const { app, site } = args;
+  
   try {
     const hooks = await appkit.api.get(`/apps/${app}/hooks`);
     const needsHook = !hooks.find(hook => hook.url === `${DETECTIFIER_URL}/v1/hook/released`);
@@ -49,6 +50,9 @@ async function enable(appkit, args) {
         events: ['released'],
       };
       await appkit.api.post(JSON.stringify(hook), `/apps/${app}/hooks`);
+      if (site && site !== "") {
+        await appkit.http.post(JSON.stringify({site}), `${DETECTIFIER_URL}/v1/config/${app}`, {'Content-type': 'application/json'});
+      }
       console.log(appkit.terminal.markdown('^^Detectify scanning successfully enabled!^^'));
     } else {
       console.log(appkit.terminal.markdown('!!Detectify scanning is already enabled on this app!!'));
@@ -103,6 +107,45 @@ async function showUI(appkit) {
   }
 }
 
+async function listSites(appkit) {
+  try {
+    const config = await appkit.http.get(`${DETECTIFIER_URL}/v1/config`);
+    if (config.length === 0) {
+      console.log(appkit.terminal.markdown('\n!! No configured site overrides. !!'));
+    } else {
+      const formattedConfig = config.map(c => ({
+        "App Name": c.akkeris_app,
+        "Site": c.site,
+      }));
+      console.log(appkit.terminal.markdown('\n^^ Configured Site Overrides ^^'));
+      console.log(appkit.terminal.markdown('### The apps below will run scans on the associated site rather than the default app endpoint.###'))
+      appkit.terminal.table(formattedConfig);
+    }
+  } catch (err) {
+    appkit.terminal.error(err);
+  }
+}
+
+async function setSite(appkit, args) {
+  const { app, site } = args;
+  try {
+    await appkit.http.post(JSON.stringify({site}), `${DETECTIFIER_URL}/v1/config/${app}`, {'Content-type': 'application/json'});
+    console.log(appkit.terminal.markdown(`\n^^✓^^ ~~${site}~~ will now be targeted for any scan on the app ^^${app}^^`))
+  } catch (err) {
+    appkit.terminal.error(err);
+  }
+}
+
+async function removeSite(appkit, args) {
+  const { app } = args;
+  try {
+    await appkit.http.delete(`${DETECTIFIER_URL}/v1/config/${app}`);
+    console.log(appkit.terminal.markdown(`\n^^✓^^ Any scan on the app ^^${app}^^ will now use the default app endpoint.`))
+  } catch (err) {
+    appkit.terminal.error(err);
+  }
+}
+
 function init(appkit) {
   const requireApp = {
     app: {
@@ -121,17 +164,50 @@ function init(appkit) {
       description: 'success threshold',
       demand: false,
     },
+    site: {
+      alias: 's',
+      string: true,
+      description: 'site to scan instead of app endpoint',
+      demand: false,
+    }
   };
+
+  const enableOptions = {
+    ...requireApp,
+    site: {
+      alias: 's',
+      string: true,
+      description: 'add site override that will be scanned instead of app endpoint',
+      demand: false,
+    }
+  }
 
   appkit.args
     .command('detectify:start', 'Start an immediate detectify scan on an app', startOptions, start.bind(null, appkit))
     .command('detectify:run', false, startOptions, start.bind(null,appkit))
 
-    .command('detectify:enable', 'Enable detectify commands on an app', requireApp, enable.bind(null, appkit))
-    .command('detectify:add', false, requireApp, enable.bind(null, appkit))
+    .command('detectify:enable', 'Enable detectify commands on an app', enableOptions, enable.bind(null, appkit))
+    .command('detectify:add', false, enableOptions, enable.bind(null, appkit))
     
     .command('detectify:disable', 'Disable detectify scans on an app', requireApp, disable.bind(null, appkit))
     .command('detectify:remove', false, requireApp, disable.bind(null, appkit))
+
+    .command('detectify:sites', 'View list of configured site overrides', {}, listSites.bind(null, appkit))
+    .command('detectify:overrides', false, {}, listSites.bind(null, appkit))
+
+    .command('detectify:sites:set <SITE>', 'Set a site override for an app', requireApp, setSite.bind(null, appkit))
+    .command('detectify:sites:add <SITE>', false, requireApp, setSite.bind(null, appkit))
+    .command('detectify:overrides:set <SITE>', false, requireApp, setSite.bind(null, appkit))
+    .command('detectify:overrides:add <SITE>', false, requireApp, setSite.bind(null, appkit))
+
+    .command('detectify:sites:unset', 'Remove a site override for an app', requireApp, removeSite.bind(null, appkit))
+    .command('detectify:sites:remove', false, requireApp, removeSite.bind(null, appkit))
+    .command('detectify:sites:destroy', false, requireApp, removeSite.bind(null, appkit))
+    .command('detectify:sites:delete', false, requireApp, removeSite.bind(null, appkit))
+    .command('detectify:overrides:unset', false, requireApp, removeSite.bind(null, appkit))
+    .command('detectify:overrides:remove', false, requireApp, removeSite.bind(null, appkit))
+    .command('detectify:overrides:destroy', false, requireApp, removeSite.bind(null, appkit))
+    .command('detectify:overrides:delete', false, requireApp, removeSite.bind(null, appkit))
     
     .command('detectify:scans', 'Show currently running Detectify scans', {}, scans.bind(null, appkit))
     .command('detectify:running', false, {}, scans.bind(null, appkit))
