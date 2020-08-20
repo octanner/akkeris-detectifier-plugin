@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/octanner/akkeris-detectifier-plugin/issues"
   },
-  "homepage": "https://github.com/octanner/akkeris-detectifier-plugin#readme"
+  "homepage": "https://github.com/octanner/akkeris-detectifier-plugin#readme",
+  "dependencies": {
+    "open": "^7.1.0"
+  }
 }
