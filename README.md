@@ -16,9 +16,13 @@ For help with Detectify scores: https://blog.detectify.com/2017/05/24/interpret-
 
 ## Commands
 
-`aka detectify:start -a APPNAME -t THRESHOLD`
+`aka detectify:start -a APPNAME -t THRESHOLD -s SITE`
 
-Start a Detectify scan on a given application. The "threshold" option is optional - it allows you to specify the maximum allowable threat score. Otherwise, the default is "6".
+Start a Detectify scan on a given application. 
+
+The "threshold" option is optional - it allows you to specify the maximum allowable threat score. Otherwise, the default is "6".
+
+The "site" option is optional - it acts as a temporary supercharged [site override](#site-overrides) that will override the default endpoint AND any configured site overrides for the app.
 
 `aka detectify:enable -a APPNAME`
 
@@ -32,8 +36,29 @@ Disable Detectify scanning for a given application
 
 Show currently running scans
 
+## Site Overrides
+
+Site overrides allow users to override the endpoint that is scanned for a given app. This is useful in various situations - for example, apps that have configured CSP filters won't allow any traffic on the default app endpoint, so they will need to scan the Akkeris site instead.
+
+Once a site override is set, any subsequent scan of the given app will use the site override URL instead of the default app endpoint.
+
+Please note that only a single site override may be created for an app. Multi-site scans for apps are not currently supported.
+
+### Commands
+
+`aka detectify:sites`
+
+Show all configured site overrides.
+
+`aka detectify:sites:set <SITE> -a APPNAME`
+
+Create a new site override for a given application
+
+`aka detectify:sites:unset -a APPNAME`
+
+Remove the site override for a given application
+
 ## Future Plans
 
-- Ability to run on-demand scans for any app or site
 - Show past scans using the CLI
 - PDF scan results (currently, Detectify does not offer this feature programmatically)
