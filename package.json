@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/octanner/akkeris-detectifier-plugin#readme",
   "dependencies": {
-    "open": "^7.1.0"
+    "open": "^7.4.2"
   }
 }
